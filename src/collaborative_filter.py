@@ -33,25 +33,23 @@ def collaborative_filter(dataFile):
     first = ratings_map.take(1)
     print("First one is: ", first)
 
-    count = ratings_map.count()
-    print("Count is: ", count)
-
     num_ratings = ratings_map.count()
-    num_users = ratings_map.map(lambda r: r[0]).distinct().count()
-    num_songs = ratings_map.map(lambda r: r[1]).distinct().count()
+    num_users = ratings_map.map(lambda r: r['user']['hash']).distinct().count()
+    num_songs = ratings_map.map(lambda r: r['song']['hash']).distinct().count()
     print("Got {} ratings, with {} distinct songs and {} distinct users".format(num_ratings,
                                                                                 num_users,
                                                                                 num_songs))
+    ratings = ratings_map.map(lambda l: Rating(l['user']['hash'], l['song']['hash'], l['rating']))
+    first = ratings.take(1)
+    print("The first rating is: ", first)
 
-    # ratings = ratings_map.map(lambda entry: Rating(entry['user']['hash'],
-    #                                                entry['song']['hash'],
-    #                                                entry['rating']))
+
     # #ratings = data.map(lambda l: l.split()).map(lambda l: Rating(int(l[0]), int(l[1]), float(l[2])))
     #
-    # # Build the recommendation model using Alternating Least Squares
-    # rank = int(10)
-    # numIterations = int(10)
-    # model = ALS.train(ratings, rank, numIterations)
+    # Build the recommendation model using Alternating Least Squares
+    rank = int(10)
+    numIterations = int(10)
+    model = ALS.train(ratings, rank, numIterations)
     # # Evaluate the model on training data
     # testdata = ratings.map(lambda p: (p[0], p[1]))
     # predictions = model.predictAll(testdata).map(lambda r: ((r[0], r[1]), r[2]))

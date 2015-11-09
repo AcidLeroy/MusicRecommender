@@ -1,5 +1,9 @@
 def parse_id(userid):
-    return {'id': userid, 'hash': int(hash(userid) & 0xffffffff)}
+
+    # from some reason I have to use 7 'f's instead of 8 to get the
+    # right number of bits or else spark will complain about not
+    # being able to cast from a long to an integer. 
+    return {'id': userid, 'hash': int(hash(userid) & 0xfffffff)}
 
 def parse_line(line):
     line = line.split()
@@ -7,5 +11,4 @@ def parse_line(line):
     song = parse_id(line[1])
     rating = float(line[2])
 
-    #return {'user':user, 'song':song, 'rating':rating}
-    return (user['hash'], song['hash'], rating)
+    return {'user':user, 'song':song, 'rating':rating}
