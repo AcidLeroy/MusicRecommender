@@ -1,8 +1,10 @@
+from __future__ import print_function
+
 from pyspark.mllib.recommendation import ALS, MatrixFactorizationModel, Rating
 from pyspark import SparkContext, SparkConf
+from src.parser import parse_line
 import os
 
-def parse_userid()
 
 spark_home = os.environ['SPARK_HOME']
 
@@ -18,9 +20,13 @@ dataFile = 'file:////Users/cody/Downloads/EvalDataYear1MSDWebsite/year1_test_tri
 # Load and parse the data
 data = sc.textFile(dataFile.format(spark_home))
 
-ratings = data.map(lambda l: l.split()).map(lambda l: Rating(int(l[0]), int(l[1]), float(l[2])))
-
-# Build the recommendation model using Alternating Least Squares
+ratings_map = data.map(parse_line)
+count = ratings_map.count()
+print("The count is: ", count)
+ratings = ratings_map.map(lambda l: Rating(l['user']['hash'], l['song']['hash'], l['rating']))
+# #ratings = data.map(lambda l: l.split()).map(lambda l: Rating(int(l[0]), int(l[1]), float(l[2])))
+#
+# # Build the recommendation model using Alternating Least Squares
 rank = 10
 numIterations = 10
 model = ALS.train(ratings, rank, numIterations)
