@@ -4,35 +4,39 @@ from pyspark.mllib.recommendation import ALS, MatrixFactorizationModel, Rating
 from pyspark import SparkContext, SparkConf
 from src.parser import parse_line
 import os
+import shutil
 import argparse
 
 
 def main():
 
     parser = argparse.ArgumentParser(description='Create a collaborative filtering system for music ratings.')
-    parser.add_argument('datafile', type=str, nargs=1,
-                        help='absolute path to the file you wish use for testing/training')
+    parser.add_argument('path', type=str, nargs=2,
+                        help='collaborative_filter <absolute path to training file> <absolute path to testing file>')
 
     args = parser.parse_args()
-    path = args.datafile[0]
-    dataFile = 'file:///{}'.format(path)
-    print("dataFile = ", dataFile)
+    train_path = args.path[0]
+    test_path = args.path[1]
+    train_dataFile = 'file:///{}'.format(train_path)
+    test_dataFile = 'file:///{}'.format(test_path)
+    print("Train dataFile = ", train_dataFile)
+    print("Test  dataFIle = ", test_dataFile)
 
-    collaborative_filter(dataFile)
+    collaborative_filter(train_dataFile, test_dataFile)
 
 
-def collaborative_filter(dataFile):
+def collaborative_filter(train_dataFile, test_dataFile):
 
     conf = SparkConf() \
         .setAppName("Collaborative Filter") \
         .set("spark.executor.memory", "5g")
     sc = SparkContext(conf=conf)
-    # Load and parse the data
-    data = sc.textFile(dataFile)
-    ratings_map = data.map(parse_line)
-    first = ratings_map.take(1)
-    print("First one is: ", first)
 
+
+    # #             TRAINING            # #
+    # Load and parse the data
+    data = sc.textFile(train_dataFile)
+    ratings_map = data.map(parse_line)
     num_ratings = ratings_map.count()
     num_users = ratings_map.map(lambda r: r['user']['hash']).distinct().count()
     num_songs = ratings_map.map(lambda r: r['song']['hash']).distinct().count()
@@ -40,29 +44,34 @@ def collaborative_filter(dataFile):
                                                                                 num_users,
                                                                                 num_songs))
     ratings = ratings_map.map(lambda l: Rating(l['user']['hash'], l['song']['hash'], l['rating']))
-    first = ratings.take(1)
-    print("The first rating is: ", first)
-
-
-    # #ratings = data.map(lambda l: l.split()).map(lambda l: Rating(int(l[0]), int(l[1]), float(l[2])))
-    #
-    # Build the recommendation model using Alternating Least Squares
     rank = int(10)
     numIterations = int(10)
+    print(20*'-','TRAINING STARTED',20*'-')
     model = ALS.train(ratings, rank, numIterations)
-    # # Evaluate the model on training data
-    testdata = ratings.map(lambda p: (p[0], p[1]))
+    print(20*'-','TRAINING FINISHED',20*'-')
+
+    # #             TESTING             # #
+    # # Evaluate the model on testing data
+    print(20*'-','TESTING STARTED',20*'-')
+    test_data = sc.textFile(test_dataFile)
+    test_ratings_map = test_data.map(parse_line)
+    test_ratings = test_ratings_map.map(lambda l: Rating(l['user']['hash'], l['song']['hash'], l['rating']))
+    testdata = test_ratings.map(lambda p: (p[0], p[1]))
     predictions = model.predictAll(testdata).map(lambda r: ((r[0], r[1]), r[2]))
-    ratesAndPreds = ratings.map(lambda r: ((r[0], r[1]), r[2])).join(predictions)
+    ratesAndPreds = test_ratings.map(lambda r: ((r[0], r[1]), r[2])).join(predictions)
     MSE = ratesAndPreds.map(lambda r: (r[1][0] - r[1][1])**2).mean()
     print("Mean Squared Error = " + str(MSE))
+    print(20*'-','TESTING FINISHED',20*'-')
+
 
     # Save and load model
     path = os.path.dirname(os.path.realpath(__file__))
+    if os.path.exists(path+'/myModelPath'):
+        shutil.rmtree(path+'/myModelPath')
     path = 'file:///' + path + '/myModelPath'
-    print(50*'*')
-    print('The path is: ' + path)
-    print(50*'*')
+    print('\n',20*'-','MODEL SAVED at',20*'-')
+    print(path)
+    print(50*'-')
     model.save(sc, path)
     sameModel = MatrixFactorizationModel.load(sc, path)
 
