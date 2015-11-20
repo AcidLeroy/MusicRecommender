@@ -3,6 +3,7 @@ from __future__ import print_function
 from pyspark.mllib.recommendation import ALS, MatrixFactorizationModel, Rating
 from pyspark import SparkContext, SparkConf
 from src.parser import parse_line
+from src.normalize import by_max_count
 import os
 import shutil
 import argparse
@@ -36,7 +37,16 @@ def collaborative_filter(train_dataFile, test_dataFile):
     # #             TRAINING            # #
     # Load and parse the data
     data = sc.textFile(train_dataFile)
-    ratings_map = data.map(parse_line)
+    # #             Normalize start         # #
+    print('Training normalization started')
+    dataKV = data.map(lambda x: (x.split(" ")[0], x))
+    userPlays = data.map(lambda x: (x.split(" ")[0], float(x.split(" ")[2])))
+    userMax   = userPlays.foldByKey(0,max)
+    userJoin = dataKV.join(userMax)
+    Ndata = userJoin.map(lambda x: (x[0] + ' ' + x[1][0].split(" ")[1] + ' ' + str(5*float(x[1][0].split(" ")[2])/x[1][1])))
+    print(' Training normalization ended')
+    # #             Normalize end           # #
+    ratings_map = Ndata.map(parse_line)
     num_ratings = ratings_map.count()
     num_users = ratings_map.map(lambda r: r['user']['hash']).distinct().count()
     num_songs = ratings_map.map(lambda r: r['song']['hash']).distinct().count()
@@ -54,7 +64,16 @@ def collaborative_filter(train_dataFile, test_dataFile):
     # # Evaluate the model on testing data
     print(20*'-','TESTING STARTED',20*'-')
     test_data = sc.textFile(test_dataFile)
-    test_ratings_map = test_data.map(parse_line)
+    # #             Normalize start           # #
+    print('testing normalization started')
+    dataKV = test_data.map(lambda x: (x.split(" ")[0], x))
+    userPlays = data.map(lambda x: (x.split(" ")[0], float(x.split(" ")[2])))
+    userMax   = userPlays.foldByKey(0,max)
+    userJoin = dataKV.join(userMax)
+    Ndata = userJoin.map(lambda x: (x[0] + ' ' + x[1][0].split(" ")[1] + ' ' + str(5*float(x[1][0].split(" ")[2])/x[1][1])))
+    print('testing normalization ended')
+    # #             Normalize end           # #
+    test_ratings_map = Ndata.map(parse_line)
     test_ratings = test_ratings_map.map(lambda l: Rating(l['user']['hash'], l['song']['hash'], l['rating']))
     testdata = test_ratings.map(lambda p: (p[0], p[1]))
     predictions = model.predictAll(testdata).map(lambda r: ((r[0], r[1]), r[2]))
