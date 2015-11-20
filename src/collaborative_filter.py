@@ -39,11 +39,11 @@ def collaborative_filter(train_dataFile, test_dataFile):
     data = sc.textFile(train_dataFile)
     # #             Normalize start         # #
     print('Training normalization started')
-    dataKV = data.map(lambda x: (x.split(" ")[0], x))
-    userPlays = data.map(lambda x: (x.split(" ")[0], float(x.split(" ")[2])))
+    dataKV = data.map(lambda x: (x.split('\t')[0], x))
+    userPlays = data.map(lambda x: (x.split('\t')[0], float(x.split('\t')[2])))
     userMax   = userPlays.foldByKey(0,max)
     userJoin = dataKV.join(userMax)
-    Ndata = userJoin.map(lambda x: (x[0] + ' ' + x[1][0].split(" ")[1] + ' ' + str(5*float(x[1][0].split(" ")[2])/x[1][1])))
+    Ndata = userJoin.map(lambda x: (x[0] + ' ' + x[1][0].split("\t")[1] + ' ' + str(5*float(x[1][0].split("\t")[2])/x[1][1])))
     print(' Training normalization ended')
     # #             Normalize end           # #
     ratings_map = Ndata.map(parse_line)
@@ -66,11 +66,11 @@ def collaborative_filter(train_dataFile, test_dataFile):
     test_data = sc.textFile(test_dataFile)
     # #             Normalize start           # #
     print('testing normalization started')
-    dataKV = test_data.map(lambda x: (x.split(" ")[0], x))
-    userPlays = data.map(lambda x: (x.split(" ")[0], float(x.split(" ")[2])))
+    dataKV = test_data.map(lambda x: (x.split("\t")[0], x))
+    userPlays = data.map(lambda x: (x.split("\t")[0], float(x.split("\t")[2])))
     userMax   = userPlays.foldByKey(0,max)
     userJoin = dataKV.join(userMax)
-    Ndata = userJoin.map(lambda x: (x[0] + ' ' + x[1][0].split(" ")[1] + ' ' + str(5*float(x[1][0].split(" ")[2])/x[1][1])))
+    Ndata = userJoin.map(lambda x: (x[0] + ' ' + x[1][0].split("\t")[1] + ' ' + str(5*float(x[1][0].split("\t")[2])/x[1][1])))
     print('testing normalization ended')
     # #             Normalize end           # #
     test_ratings_map = Ndata.map(parse_line)
