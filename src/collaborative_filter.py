@@ -81,6 +81,7 @@ def collaborative_filter(train_dataFile, test_dataFile):
 
     print("Mean Squared Error = " + str(MSE))
     print("Mean Absolute Error = " + str(MAE))
+    print("Root Mean Square Error = ", str(MSE**.5))
     print(20*'-','TESTING FINISHED',20*'-')
 
 
