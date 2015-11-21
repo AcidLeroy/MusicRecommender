@@ -54,38 +54,43 @@ def collaborative_filter(train_dataFile, test_dataFile):
                                                                                 num_users,
                                                                                 num_songs))
     ratings = ratings_map.map(lambda l: Rating(l['user']['hash'], l['song']['hash'], l['rating']))
-    print(ratings.take(3))
-    sys.exit(0)
-    rank = int(10)
-    numIterations = int(10)
+    ratings_valid = ratings.sample(False,0.1,12345)
+    ratings_train = ratings.subtract(ratings_valid)
 
 
     print(20*'-','TRAINING STARTED',20*'-')
-    ranks = [8, 12]
-    lambdas = [1.0, 10.0]
-    numIters = [10, 20]
+    ranks = [8]
+    lambdas = [1.0, 10.0, 5.0]
+    numIters = [10]
     bestModel = None
-    bestValidationRmse = float("inf")
+    bestValidationMSE = float("inf")
     bestRank = 0
     bestLambda = -1.0
     bestNumIter = -1
-
     for rank, lmbda, numIter in itertools.product(ranks, lambdas, numIters):
-        model = ALS.train(ratings, rank, numIter, lmbda)
-        validationRmse = computeRmse(model, validation, numValidation)
-        if (validationRmse < bestValidationRmse):
+        print(ranks, lmbda, numIter)
+        model = ALS.train(ratings_train, rank, numIter, lmbda)
+        testdata = ratings_valid.map(lambda p: (p[0], p[1]))
+        predictions = model.predictAll(testdata).map(lambda r: ((r[0], r[1]), r[2]))
+        ratesAndPreds = ratings_valid.map(lambda r: ((r[0], r[1]), r[2])).join(predictions)
+        MSE = ratesAndPreds.map(lambda r: (r[1][0] - r[1][1])**2).mean()
+        if (MSE < bestValidationMSE):
             bestModel = model
-            bestValidationRmse = validationRmse
+            bestValidationMSE = MSE
             bestRank = rank
             bestLambda = lmbda
             bestNumIter = numIter
-
-    testRmse = computeRmse(bestModel, test, numTest)
     # evaluate the best model on the test set
-
-
-    model = ALS.train(ratings, rank, numIterations)
+    #model = ALS.train(ratings, rank, numIterations)
     print(20*'-','TRAINING FINISHED',20*'-')
+
+
+
+
+
+
+
+
 
     # #             TESTING             # #
     # # Evaluate the model on testing data
@@ -103,9 +108,8 @@ def collaborative_filter(train_dataFile, test_dataFile):
     test_ratings_map = Ndata.map(parse_line)
     test_ratings = test_ratings_map.map(lambda l: Rating(l['user']['hash'], l['song']['hash'], l['rating']))
     testdata = test_ratings.map(lambda p: (p[0], p[1]))
-    predictions = model.predictAll(testdata).map(lambda r: ((r[0], r[1]), r[2]))
+    predictions = bestModel.predictAll(testdata).map(lambda r: ((r[0], r[1]), r[2]))
     ratesAndPreds = test_ratings.map(lambda r: ((r[0], r[1]), r[2])).join(predictions)
-    print(ratesAndPreds.collect())
     MSE = ratesAndPreds.map(lambda r: (r[1][0] - r[1][1])**2).mean()
     print("Mean Squared Error = " + str(MSE))
     print(20*'-','TESTING FINISHED',20*'-')
