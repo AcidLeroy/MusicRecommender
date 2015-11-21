@@ -77,8 +77,10 @@ def collaborative_filter(train_dataFile, test_dataFile):
     predictions = bestModel.predictAll(testdata).map(lambda r: ((r[0], r[1]), r[2]))
     ratesAndPreds = test_ratings.map(lambda r: ((r[0], r[1]), r[2])).join(predictions)
     MSE = ratesAndPreds.map(lambda r: (r[1][0] - r[1][1])**2).mean()
+    MAE = ratesAndPreds.map(lambda r: (abs(abs(r[1][0]) - abs(r[1][1])))).mean()
 
     print("Mean Squared Error = " + str(MSE))
+    print("Mean Absolute Error = " + str(MAE))
     print(20*'-','TESTING FINISHED',20*'-')
 
 
