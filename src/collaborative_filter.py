@@ -7,6 +7,7 @@ from src.normalize import by_max_count
 import os
 import shutil
 import argparse
+import itertools
 
 
 def main():
@@ -24,7 +25,6 @@ def main():
     print("Test  dataFIle = ", test_dataFile)
 
     collaborative_filter(train_dataFile, test_dataFile)
-
 
 def collaborative_filter(train_dataFile, test_dataFile):
 
@@ -54,9 +54,36 @@ def collaborative_filter(train_dataFile, test_dataFile):
                                                                                 num_users,
                                                                                 num_songs))
     ratings = ratings_map.map(lambda l: Rating(l['user']['hash'], l['song']['hash'], l['rating']))
+    print(ratings.take(3))
+    sys.exit(0)
     rank = int(10)
     numIterations = int(10)
+
+
     print(20*'-','TRAINING STARTED',20*'-')
+    ranks = [8, 12]
+    lambdas = [1.0, 10.0]
+    numIters = [10, 20]
+    bestModel = None
+    bestValidationRmse = float("inf")
+    bestRank = 0
+    bestLambda = -1.0
+    bestNumIter = -1
+
+    for rank, lmbda, numIter in itertools.product(ranks, lambdas, numIters):
+        model = ALS.train(ratings, rank, numIter, lmbda)
+        validationRmse = computeRmse(model, validation, numValidation)
+        if (validationRmse < bestValidationRmse):
+            bestModel = model
+            bestValidationRmse = validationRmse
+            bestRank = rank
+            bestLambda = lmbda
+            bestNumIter = numIter
+
+    testRmse = computeRmse(bestModel, test, numTest)
+    # evaluate the best model on the test set
+
+
     model = ALS.train(ratings, rank, numIterations)
     print(20*'-','TRAINING FINISHED',20*'-')
 
@@ -78,6 +105,7 @@ def collaborative_filter(train_dataFile, test_dataFile):
     testdata = test_ratings.map(lambda p: (p[0], p[1]))
     predictions = model.predictAll(testdata).map(lambda r: ((r[0], r[1]), r[2]))
     ratesAndPreds = test_ratings.map(lambda r: ((r[0], r[1]), r[2])).join(predictions)
+    print(ratesAndPreds.collect())
     MSE = ratesAndPreds.map(lambda r: (r[1][0] - r[1][1])**2).mean()
     print("Mean Squared Error = " + str(MSE))
     print(20*'-','TESTING FINISHED',20*'-')
