@@ -3,9 +3,11 @@ from __future__ import print_function
 from pyspark.mllib.recommendation import ALS, MatrixFactorizationModel, Rating
 from pyspark import SparkContext, SparkConf
 from src.parser import parse_line
+from src.normalize import by_max_count
 import os
 import shutil
 import argparse
+import itertools
 
 
 def main():
@@ -24,7 +26,6 @@ def main():
 
     collaborative_filter(train_dataFile, test_dataFile)
 
-
 def collaborative_filter(train_dataFile, test_dataFile):
 
     conf = SparkConf() \
@@ -36,7 +37,16 @@ def collaborative_filter(train_dataFile, test_dataFile):
     # #             TRAINING            # #
     # Load and parse the data
     data = sc.textFile(train_dataFile)
-    ratings_map = data.map(parse_line)
+    # #             Normalize start         # #
+    print('Training normalization started')
+    dataKV = data.map(lambda x: (x.split('\t')[0], x))
+    userPlays = data.map(lambda x: (x.split('\t')[0], float(x.split('\t')[2])))
+    userMax   = userPlays.foldByKey(0,max)
+    userJoin = dataKV.join(userMax)
+    Ndata = userJoin.map(lambda x: (x[0] + ' ' + x[1][0].split("\t")[1] + ' ' + str(5*float(x[1][0].split("\t")[2])/x[1][1])))
+    print(' Training normalization ended')
+    # #             Normalize end           # #
+    ratings_map = Ndata.map(parse_line)
     num_ratings = ratings_map.count()
     num_users = ratings_map.map(lambda r: r['user']['hash']).distinct().count()
     num_songs = ratings_map.map(lambda r: r['song']['hash']).distinct().count()
@@ -44,9 +54,36 @@ def collaborative_filter(train_dataFile, test_dataFile):
                                                                                 num_users,
                                                                                 num_songs))
     ratings = ratings_map.map(lambda l: Rating(l['user']['hash'], l['song']['hash'], l['rating']))
+    print(ratings.take(3))
+    sys.exit(0)
     rank = int(10)
     numIterations = int(10)
+
+
     print(20*'-','TRAINING STARTED',20*'-')
+    ranks = [8, 12]
+    lambdas = [1.0, 10.0]
+    numIters = [10, 20]
+    bestModel = None
+    bestValidationRmse = float("inf")
+    bestRank = 0
+    bestLambda = -1.0
+    bestNumIter = -1
+
+    for rank, lmbda, numIter in itertools.product(ranks, lambdas, numIters):
+        model = ALS.train(ratings, rank, numIter, lmbda)
+        validationRmse = computeRmse(model, validation, numValidation)
+        if (validationRmse < bestValidationRmse):
+            bestModel = model
+            bestValidationRmse = validationRmse
+            bestRank = rank
+            bestLambda = lmbda
+            bestNumIter = numIter
+
+    testRmse = computeRmse(bestModel, test, numTest)
+    # evaluate the best model on the test set
+
+
     model = ALS.train(ratings, rank, numIterations)
     print(20*'-','TRAINING FINISHED',20*'-')
 
@@ -54,11 +91,21 @@ def collaborative_filter(train_dataFile, test_dataFile):
     # # Evaluate the model on testing data
     print(20*'-','TESTING STARTED',20*'-')
     test_data = sc.textFile(test_dataFile)
-    test_ratings_map = test_data.map(parse_line)
+    # #             Normalize start           # #
+    print('testing normalization started')
+    dataKV = test_data.map(lambda x: (x.split("\t")[0], x))
+    userPlays = data.map(lambda x: (x.split("\t")[0], float(x.split("\t")[2])))
+    userMax   = userPlays.foldByKey(0,max)
+    userJoin = dataKV.join(userMax)
+    Ndata = userJoin.map(lambda x: (x[0] + ' ' + x[1][0].split("\t")[1] + ' ' + str(5*float(x[1][0].split("\t")[2])/x[1][1])))
+    print('testing normalization ended')
+    # #             Normalize end           # #
+    test_ratings_map = Ndata.map(parse_line)
     test_ratings = test_ratings_map.map(lambda l: Rating(l['user']['hash'], l['song']['hash'], l['rating']))
     testdata = test_ratings.map(lambda p: (p[0], p[1]))
     predictions = model.predictAll(testdata).map(lambda r: ((r[0], r[1]), r[2]))
     ratesAndPreds = test_ratings.map(lambda r: ((r[0], r[1]), r[2])).join(predictions)
+    print(ratesAndPreds.collect())
     MSE = ratesAndPreds.map(lambda r: (r[1][0] - r[1][1])**2).mean()
     print("Mean Squared Error = " + str(MSE))
     print(20*'-','TESTING FINISHED',20*'-')
