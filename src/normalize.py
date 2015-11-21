@@ -11,7 +11,7 @@ def by_max_count(rdd_in):
     userPlays = dataKV.map(lambda x: (x[0], x[1][2]))
     userMax = userPlays.foldByKey(0,max)
     userJoin = dataKV.join(userMax)
-    Ndata = userJoin.map(lambda x: (x[0], x[1][0][0], 5*x[1][0][2]/x[1][1]))
+    Ndata = userJoin.map(lambda x: (x[0], x[1][0][0], x[1][0][2]/x[1][1]))
     return Ndata
 
 def format_triplets(rdd_in):

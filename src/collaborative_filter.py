@@ -3,7 +3,7 @@ from __future__ import print_function
 from pyspark.mllib.recommendation import ALS, MatrixFactorizationModel, Rating
 from pyspark import SparkContext, SparkConf
 from src.parser import parse_line
-from src.normalize import by_max_count
+from src.normalize import by_max_count, format_triplets
 import os
 import shutil
 import argparse
@@ -26,6 +26,7 @@ def main():
 
     collaborative_filter(train_dataFile, test_dataFile)
 
+
 def collaborative_filter(train_dataFile, test_dataFile):
 
     conf = SparkConf() \
@@ -33,29 +34,10 @@ def collaborative_filter(train_dataFile, test_dataFile):
         .set("spark.executor.memory", "5g")
     sc = SparkContext(conf=conf)
 
+    train_ratings = get_ratings(sc, train_dataFile)
 
-    # #             TRAINING            # #
-    # Load and parse the data
-    data = sc.textFile(train_dataFile)
-    # #             Normalize start         # #
-    print('Training normalization started')
-    dataKV = data.map(lambda x: (x.split('\t')[0], x))
-    userPlays = data.map(lambda x: (x.split('\t')[0], float(x.split('\t')[2])))
-    userMax   = userPlays.foldByKey(0,max)
-    userJoin = dataKV.join(userMax)
-    Ndata = userJoin.map(lambda x: (x[0] + ' ' + x[1][0].split("\t")[1] + ' ' + str(5*float(x[1][0].split("\t")[2])/x[1][1])))
-    print(' Training normalization ended')
-    # #             Normalize end           # #
-    ratings_map = Ndata.map(parse_line)
-    num_ratings = ratings_map.count()
-    num_users = ratings_map.map(lambda r: r['user']['hash']).distinct().count()
-    num_songs = ratings_map.map(lambda r: r['song']['hash']).distinct().count()
-    print("Got {} ratings, with {} distinct songs and {} distinct users".format(num_ratings,
-                                                                                num_users,
-                                                                                num_songs))
-    ratings = ratings_map.map(lambda l: Rating(l['user']['hash'], l['song']['hash'], l['rating']))
-    ratings_valid = ratings.sample(False,0.1,12345)
-    ratings_train = ratings.subtract(ratings_valid)
+    ratings_valid = train_ratings.sample(False, 0.1, 12345)
+    ratings_train = train_ratings.subtract(ratings_valid)
 
 
     print(20*'-','TRAINING STARTED',20*'-')
@@ -86,31 +68,16 @@ def collaborative_filter(train_dataFile, test_dataFile):
 
 
 
-
-
-
-
-
-
     # #             TESTING             # #
     # # Evaluate the model on testing data
     print(20*'-','TESTING STARTED',20*'-')
-    test_data = sc.textFile(test_dataFile)
-    # #             Normalize start           # #
-    print('testing normalization started')
-    dataKV = test_data.map(lambda x: (x.split("\t")[0], x))
-    userPlays = data.map(lambda x: (x.split("\t")[0], float(x.split("\t")[2])))
-    userMax   = userPlays.foldByKey(0,max)
-    userJoin = dataKV.join(userMax)
-    Ndata = userJoin.map(lambda x: (x[0] + ' ' + x[1][0].split("\t")[1] + ' ' + str(5*float(x[1][0].split("\t")[2])/x[1][1])))
-    print('testing normalization ended')
-    # #             Normalize end           # #
-    test_ratings_map = Ndata.map(parse_line)
-    test_ratings = test_ratings_map.map(lambda l: Rating(l['user']['hash'], l['song']['hash'], l['rating']))
+    test_ratings = get_ratings(sc, train_dataFile)
+
     testdata = test_ratings.map(lambda p: (p[0], p[1]))
     predictions = bestModel.predictAll(testdata).map(lambda r: ((r[0], r[1]), r[2]))
     ratesAndPreds = test_ratings.map(lambda r: ((r[0], r[1]), r[2])).join(predictions)
     MSE = ratesAndPreds.map(lambda r: (r[1][0] - r[1][1])**2).mean()
+
     print("Mean Squared Error = " + str(MSE))
     print(20*'-','TESTING FINISHED',20*'-')
 
@@ -125,6 +92,27 @@ def collaborative_filter(train_dataFile, test_dataFile):
     print(50*'-')
     model.save(sc, path)
     sameModel = MatrixFactorizationModel.load(sc, path)
+
+
+def get_ratings(sc, data_file):
+
+    data = sc.textFile(data_file)
+    # #             Normalize start         # #
+    print('Training normalization started')
+    data_dict, data_triplet = format_triplets(data)
+    data_triplet = by_max_count(data_triplet)
+    print(' Training normalization ended')
+    # #             Normalize end           # #
+    num_ratings = data_triplet.count()
+    num_users = data_triplet.map(lambda r: r[0]).distinct().count()
+    num_songs = data_triplet.map(lambda r: r[1]).distinct().count()
+    print(100 * '//')
+    print("Got {} ratings, with {} distinct songs and {} distinct users".format(num_ratings,
+                                                                                num_users,
+                                                                                num_songs))
+    print(100 * '//')
+    train_ratings = data_triplet.map(lambda l: Rating(l[0], l[1], l[2]))
+    return train_ratings
 
 
 if __name__ == '__main__':
