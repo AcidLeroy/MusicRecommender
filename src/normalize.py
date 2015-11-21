@@ -1,4 +1,4 @@
-from pyspark import SparkContext, SparkConf
+from src.parser import parse_line
 
 def by_max_count(rdd_in):
     """
@@ -7,9 +7,14 @@ def by_max_count(rdd_in):
     :param rdd_in: RDD that represents a list of triplets.
     :return: Returns an RDD with with play count normalized
     """
-    dataKV = rdd_in.map(lambda x: (x.split(" ")[0], x))
-    userPlays = rdd_in.map(lambda x: (x.split(" ")[0], float(x.split(" ")[2])))
-    userMax   = userPlays.foldByKey(0,max)
+    dataKV = rdd_in.map(lambda x: (x[0], x))
+    userPlays = dataKV.map(lambda x: (x[0], x[1][2]))
+    userMax = userPlays.foldByKey(0,max)
     userJoin = dataKV.join(userMax)
-    Ndata = userJoin.map(lambda x: (x[0], x[1][0].split(" ")[1], 5*float(x[1][0].split(" ")[2])/x[1][1]))
+    Ndata = userJoin.map(lambda x: (x[0], x[1][0][0], 5*x[1][0][2]/x[1][1]))
     return Ndata
+
+def format_triplets(rdd_in):
+    ratings_dict = rdd_in.map(parse_line)
+    ratings_triplet = ratings_dict.map(lambda x: (x['user']['hash'], x['song']['hash'], x['rating']))
+    return (ratings_dict, ratings_triplet)
