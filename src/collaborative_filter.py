@@ -50,7 +50,7 @@ def collaborative_filter(train_dataFile, test_dataFile):
     bestLambda = -1.0
     bestNumIter = -1
     for rank, lmbda, numIter in itertools.product(ranks, lambdas, numIters):
-        print(ranks, lmbda, numIter)
+        print(rank, lmbda, numIter)
         model = ALS.train(ratings_train, rank, numIter, lmbda)
         testdata = ratings_valid.map(lambda p: (p[0], p[1]))
         predictions = model.predictAll(testdata).map(lambda r: ((r[0], r[1]), r[2]))
