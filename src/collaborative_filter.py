@@ -72,7 +72,7 @@ def collaborative_filter(train_dataFile, test_dataFile):
     # #             TESTING             # #
     # # Evaluate the model on testing data
     print(20*'-','TESTING STARTED',20*'-')
-    test_ratings = get_ratings(sc, train_dataFile)
+    test_ratings = get_ratings(sc, test_dataFile)
 
     testdata = test_ratings.map(lambda p: (p[0], p[1]))
     predictions = bestModel.predictAll(testdata).map(lambda r: ((r[0], r[1]), r[2]))
