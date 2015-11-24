@@ -1,1 +1,15 @@
 *.pyc
+*.out
+*.nav
+*.pdf
+*.gz
+*.toc
+*.DS_Store
+*.idea
+*.snm
+*.a
+*.aux
+*.log
+myModelPath/
+*.swp
+
