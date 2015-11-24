@@ -8,6 +8,7 @@ import os
 import shutil
 import argparse
 import itertools
+from src.listeningStatistics import user_listeningStatistics
 
 
 def main():
