@@ -27,47 +27,55 @@
 \date{\today}
 
 \begin{document}
-	\maketitle
-	\section{Outline}
-	\begin{frame}
-		\frametitle{Outline}
-		\begin{itemize}
-			\item Collaborative filtering
-			\begin{itemize}
-				\item Data normalization
-				\item Validation
-				\item Algorithm
-				\item Results
-				\item References
-			\end{itemize}
-			\item Content Based Filtering
-		\end{itemize}
-	\end{frame}
-	\section{Collaborative filtering}
-	\begin{frame}
-		\frametitle{Data normaliztaion}
-	\end{frame}
-	\begin{frame}
-		\frametitle{Validation}
-	\end{frame}
-	\begin{frame}
-		\frametitle{Algorithm}
-	\end{frame}
-	\begin{frame}
-		\frametitle{Results}
-	\end{frame}
-	
-	\section{Content Based Filtering}
-	\begin{frame}
-		\frametitle{Getting Features}
-		\begin{figure}[h]
-    \centering
-    \includegraphics[width=4in]{figures/xor_plot.eps}
-    \caption{XOR plot}
-    \label{fig:xor_plot} 
-        \end{figure}
+\maketitle
+\section{Outline}
+\begin{frame}
+  \frametitle{Outline}
+  \begin{itemize}
+    \item Collaborative filtering
+      \begin{itemize}
+        \item Data normalization
+        \item Validation
+        \item Algorithm
+        \item Results
+        \item References
+      \end{itemize}
+    \item Content Based Filtering
+  \end{itemize}
+\end{frame}
+\section{Collaborative filtering}
+\begin{frame}
+  \frametitle{Data normaliztaion}
+\end{frame}
+\begin{frame}
+  \frametitle{Validation}
+\end{frame}
+\begin{frame}
+  \frametitle{Algorithm}
+\end{frame}
+\begin{frame}
+  \frametitle{Results}
+\end{frame}
 
-		
-	\end{frame}
-	
+\section{Content Based Filtering}
+\begin{frame}
+  \frametitle{Getting Features}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=4in]{figures/similarity_matrix.png}
+    \caption{Extracting the features}
+    \label{fig:similarity_matrix} 
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Generating Dense Rating Matrix}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=4in]{figures/content_similarity_algorithm.png}
+    \caption{Building a dense matrix to feed to the collaborative filtering algorithm}
+    \label{fig:content_similarity_algorithm} 
+  \end{figure}
+\end{frame}
+
 \end{document}
