@@ -101,10 +101,17 @@
         validation set, $VS$ is picked as best model.
     \end{itemize}
   \end{frame}
+
   \begin{frame}
     \frametitle{Results}
+    \begin{itemize}
+      \item Results based on a scaling from 0-10: 
+        \begin{itemize}
+          \item Mean Absolute Difference: 2.6
+          \item Root Mean Square Error  : 3.7
+        \end{itemize}
+    \end{itemize}
   \end{frame}
-
 
   \section{Content Based Filtering}
   \begin{frame}
@@ -167,7 +174,7 @@
     \begin{itemize}
       \item Time 
         \begin{itemize}
-          \item Even if we had the space, to store such a matrix it would take a very long time
+          \item Even if we had the space generating the matrix takes a lot of patience 
         \end{itemize}
     \end{itemize}
   \end{frame}
@@ -191,6 +198,13 @@
         \end{itemize}
         \item Improve dense user matrix creation algorithm for better parallelization. 
       \end{itemize}
+    \end{itemize}
+  \end{frame}
+
+  \section{Code Base}
+  \begin{frame}
+    \begin{itemize}
+      \item All code for challenge is here: https://github.com/AcidLeroy/MusicRecommender/
     \end{itemize}
   \end{frame}
 
