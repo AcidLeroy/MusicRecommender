@@ -22,7 +22,7 @@
 % Show uncovered items: 0 is invisible, 100 is fully visible
 \setbeamercovered{transparent=3}
 
-\author{Cody Eilar, Venkatesh Jatla, Mustafa}
+\author{Cody Eilar, Venkatesh Jatla, Mustafa Al-Mashhadani}
 \title{Recommender Systems}
 \logo{\includegraphics[width=2.5cm]{figures/ecelogo.jpg}}
 \institute{Dept of Electrical and Computer Engineering \\ The University of New Mexico \\ Albuquerque, NM 87131-0001, USA}
@@ -36,9 +36,9 @@
   \begin{itemize}
     \item Collaborative filtering
       \begin{itemize}
+        \item Overview
         \item Data normalization
         \item Validation
-        \item Algorithm
         \item Results
         \item References
       \end{itemize}
@@ -49,6 +49,16 @@
   \end{itemize}
 \end{frame}
 \section{Collaborative filtering}
+
+
+\begin{frame}
+  \frametitle{Overview}
+  \begin{figure}
+    \includegraphics[width=0.5\linewidth]{figures/CollaborativeFilteringOverview.jpg}
+  \end{figure}
+\end{frame}
+
+
 \begin{frame}
   \frametitle{Data normaliztaion}
   \begin{itemize}
@@ -64,12 +74,16 @@
       \end{equation}
   \end{itemize}
 \end{frame}
+
+
 \begin{frame}
   \frametitle{Validation block diagram}
   \begin{figure}
     \includegraphics[width=0.5\linewidth]{figures/Validation.jpg}
   \end{figure}
 \end{frame}
+
+
 \begin{frame}
   \frametitle{Validation}
   \begin{itemize}
@@ -88,11 +102,10 @@
     \end{itemize}
   \end{frame}
   \begin{frame}
-    \frametitle{Algorithm}
-  \end{frame}
-  \begin{frame}
     \frametitle{Results}
   \end{frame}
+
+
   \section{Content Based Filtering}
   \begin{frame}
     \frametitle{Getting Features}
@@ -100,7 +113,7 @@
       \centering
       \includegraphics[width=4in]{figures/similarity_matrix.png}
       \caption{Extracting the features}
-      \label{fig:similarity_matrix} 
+      \label{fig:similarity_matrix}
     \end{figure}
   \end{frame}
 
@@ -110,9 +123,7 @@
       \centering
       \includegraphics[width=4in]{figures/content_similarity_algorithm.png}
       \caption{Building a dense matrix to feed to the collaborative filtering algorithm}
-      \label{fig:content_similarity_algorithm} 
+      \label{fig:content_similarity_algorithm}
     \end{figure}
   \end{frame}
-
-  \section{Test}
   \end{document}
