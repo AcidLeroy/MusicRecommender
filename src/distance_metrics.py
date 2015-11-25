@@ -2,7 +2,7 @@ from pyspark import SparkContext, SparkConf
 import numpy as np
 import scipy.spatial.distance as ssd
 
-def calculate_distance(rdd_in, distance_func):
+def calculate_distance(rdd_in, distance_func=ssd.cosine):
     """
     Calculate any distance metric of an RDD
     :param rdd_in (RDD): Rows = sample of features from each item, Cols = features (NxD matrix)
