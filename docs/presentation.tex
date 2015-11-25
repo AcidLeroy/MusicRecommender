@@ -136,4 +136,67 @@
     \end{figure}
   \end{frame}
 
+
+  \section{Challenges with Content Based Filtering}
+  \begin{frame}
+    \frametitle{Challenges Combining Methods}
+    \begin{itemize}
+      \item Two main challenges with this approach
+        \begin{itemize}
+          \item SIZE
+          \item Time...........
+        \end{itemize}
+    \end{itemize}
+  \end{frame}
+
+  \begin{frame}
+    \frametitle{Calculating similarity matrix with brute force}
+    \begin{itemize}
+      \item Size
+        \begin{itemize}
+          \item $1,000,000^2 \times 4\text{bytes} = 4\text{TB}$ to store item-
+          -item similarity matrix
+          \item Even if you account for symmetry: $\text{num\_entries} = \frac{n^2(n-1)}{2}$, 
+          we still have a very large matrix.
+        \end{itemize}
+    \end{itemize}
+  \end{frame}
+
+  \begin{frame}
+    \frametitle{Calculating similarity matrix with brute force}
+    \begin{itemize}
+      \item Time 
+        \begin{itemize}
+          \item Even if we had the space, to store such a matrix it would take a very long time
+        \end{itemize}
+    \end{itemize}
+  \end{frame}
+
+  \begin{frame}
+    \frametitle{Results}
+    \begin{itemize}
+      \item Because of challenges implementing some of the details in spark, we never had a successful run
+      with our dense matrix as input.
+    \end{itemize}
+  \end{frame}
+
+  \begin{frame}
+    \frametitle{Future Work}
+    \begin{itemize}
+      \item In order to get this approach to work, the following needs to be looked into: 
+      \begin{itemize}
+        \item Reducing the size of item-item similarity matrix.
+        \begin{itemize}
+          \item Make it a sparse matrix by only keeping similarities above a certain threshold
+        \end{itemize}
+        \item Improve dense user matrix creation algorithm for better parallelization. 
+      \end{itemize}
+    \end{itemize}
+  \end{frame}
+
+  \section{Questions?}
+  \begin{frame}
+    \frametitle{Questions?}
+  \end{frame}
+
   \end{document}
