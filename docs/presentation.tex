@@ -118,6 +118,13 @@
   \end{frame}
 
   \begin{frame}
+    \begin{figure}[!h]
+      \centering
+      \includegraphics[width=0.5\linewidth]{figures/contentBasedBlockDiag.jpg}
+      \caption{Collaborative filtering using content based predictions}
+    \end{figure}
+  \end{frame}
+  \begin{frame}
     \frametitle{Generating Dense Rating Matrix}
     \begin{figure}[h]
       \centering
@@ -156,7 +163,7 @@
         \begin{itemize}
           \item $1,000,000^2 \times 4\text{bytes} = 4\text{TB}$ to store item-
           -item similarity matrix
-          \item Even if you account for symmetry: $\text{num\_entries} = \frac{n^2(n-1)}{2}$, 
+          \item Even if you account for symmetry: $\text{num\_entries} = \frac{n^2(n-1)}{2}$,
           we still have a very large matrix.
         \end{itemize}
     \end{itemize}
@@ -165,7 +172,7 @@
   \begin{frame}
     \frametitle{Calculating similarity matrix with brute force}
     \begin{itemize}
-      \item Time 
+      \item Time
         \begin{itemize}
           \item Even if we had the space, to store such a matrix it would take a very long time
         \end{itemize}
@@ -183,13 +190,13 @@
   \begin{frame}
     \frametitle{Future Work}
     \begin{itemize}
-      \item In order to get this approach to work, the following needs to be looked into: 
+      \item In order to get this approach to work, the following needs to be looked into:
       \begin{itemize}
         \item Reducing the size of item-item similarity matrix.
         \begin{itemize}
           \item Make it a sparse matrix by only keeping similarities above a certain threshold
         \end{itemize}
-        \item Improve dense user matrix creation algorithm for better parallelization. 
+        \item Improve dense user matrix creation algorithm for better parallelization.
       \end{itemize}
     \end{itemize}
   \end{frame}
