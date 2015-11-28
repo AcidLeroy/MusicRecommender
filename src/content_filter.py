@@ -29,6 +29,9 @@ def get_new_ratings(test_data, train_data):
         user = x['user_id']
         song_cluster_id = x['cluster']
         song_id = x['song_id']
+        if user not in user_group.groups:
+            return x
+
         user_ratings = user_group.get_group(user)
         song_ratings = user_ratings.groupby('song_id')
         if song_id in song_ratings.groups:
@@ -61,6 +64,26 @@ def test_get_same_ratings():
     new_train = train_data.copy()
     actual_value = get_new_ratings(train_data, new_train)
     print(actual_value)
+    assert_frame_equal(train_data, actual_value)
+
+def test_unseen_user():
+    (train_data, test_data, features) = setup_test_data()
+    test_data = append_cluster_id(test_data, features)
+    train_data = append_cluster_id(train_data, features)
+    unseen_user = pd.DataFrame({'song_id': ['s4'],
+                                'rating':[np.NaN],
+                                'user_id':['u99'],
+                                'cluster':[0]})
+    test_data = pd.concat([test_data, unseen_user], ignore_index=True)
+    expected_value = test_data.copy()
+    actual_value = get_new_ratings(test_data, train_data)
+    print(actual_value)
+    expected_value['rating'].iloc[0] = 6.5
+    expected_value['rating'].iloc[4] = 5.0
+    print(expected_value)
+    assert_frame_equal(expected_value, actual_value)
+
+
 
 def test_get_new_ratings():
     (train_data, test_data, features) = setup_test_data()
@@ -99,6 +122,8 @@ def test_append_cluster_id():
 def main():
     test_append_cluster_id()
     test_get_new_ratings()
+    test_get_same_ratings()
+    test_unseen_user()
 
 if __name__ == '__main__':
     main()
