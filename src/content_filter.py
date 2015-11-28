@@ -22,15 +22,17 @@ def get_new_ratings(test_data, train_data):
     :param train_data:
     :return:
     """
+
+    user_group = train_data.groupby('user_id')
+
     def func(x):
         user = x['user_id']
         song_cluster_id = x['cluster']
         song_id = x['song_id']
-        user_group = train_data.groupby('user_id')
         user_ratings = user_group.get_group(user)
         song_ratings = user_ratings.groupby('song_id')
         if song_id in song_ratings.groups:
-            x['rating'] = song_ratings.get_group(song_id)['rating'][0]
+            x['rating'] = song_ratings.get_group(song_id)['rating'].iloc[0]
             return x
 
         cluster_ratings = user_ratings.groupby('cluster')
@@ -52,6 +54,13 @@ def setup_test_data():
     features = pd.DataFrame({'song_id':['s1', 's2', 's3', 's4', 's5'], 'cluster':[0, 0, 1, 2, 0]})
 
     return (training_data, testing_data, features)
+
+def test_get_same_ratings():
+    (train_data, test_data, features) = setup_test_data()
+    train_data = append_cluster_id(train_data, features)
+    new_train = train_data.copy()
+    actual_value = get_new_ratings(train_data, new_train)
+    print(actual_value)
 
 def test_get_new_ratings():
     (train_data, test_data, features) = setup_test_data()
