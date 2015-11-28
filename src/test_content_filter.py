@@ -10,6 +10,7 @@ def main():
     training_data = pd.read_csv(training_file, sep='\t', names=['user_id', 'song_id', 'rating'])
     testing_data = pd.read_csv(testing_file, sep='\t', names=['user_id', 'song_id', 'rating'])
     testing_data = append_cluster_id(testing_data, song_features[['song_id', 'cluster']])
+    testing_data['rating'] = np.NaN
     training_data = append_cluster_id(training_data, song_features[['song_id', 'cluster']])
     new_ratings = get_new_ratings(testing_data, training_data)
     new_ratings = new_ratings.dropna()
