@@ -41,9 +41,7 @@
       \begin{itemize}
         \item Overview
         \item Data normalization
-        \item Validation
-        \item Results
-        \item References
+        \item Validation block diagram
       \end{itemize}
     \item Content based filtering
       \begin{itemize}
@@ -106,7 +104,7 @@
   \section{Content Based Filtering}
   \begin{frame}
     \begin{figure}[!h]
-      \frametitle{Contentent enhanced collaborative filtering}
+      \frametitle{Block diagram}
       \centering
       \includegraphics[width=0.5\linewidth]{figures/contentBasedBlockDiag.jpg}
       \caption{ Content enhanced collaborative filtering}
@@ -115,15 +113,19 @@
 
   \begin{frame}
     \frametitle{Features}
-    For content based filtering we focues our effort on features that could be easily imported ({\it float values, almost all songs have them}). We found two such features,
+    For content based filtering we focused our effort on features that could be easily imported ({\it float values, almost all songs have them}). We found two such features,
     {\bf artist familiarity} and {\bf artist hotness}.
     \begin{table}
-      \begin{tabular}{|l|l l|}
+      \begin{tabular}{|p{4.5cm}|p{2cm} p{2cm} p{2cm}|}
         \hline
-        {\bf song id} & {\bf artist familiarity} & {\bf artist hotness}\\
+        {\bf song id} & {\bf familiarity} & {\bf hotness} & {\bf cluster id}\\
         \hline
         \hline
-        ??? & ??? & ????\\
+          SOQMMHC12AB0180CB8&           0.39&            0.64&       35\\
+          SOVFVAK12A8C1350D9&           0.35&            0.43&       12\\
+          SOGTUKN12AB017F4F1&           0.43&            0.64&        4\\
+          SOBNYVR12A8C13558C&           0.37&            0.44&       12\\
+          SOHSBXH12A8C13B0DF&           0.00&            0.00&       71\\
         \hline
       \end{tabular}
     \end{table}
@@ -132,10 +134,10 @@
   \begin{frame}
     \frametitle{Clustering}
     \begin{itemize}
-      \item Method used:
-      \item Number of clusters: 100. 
-      \item Distance metric:
-      \item
+      \item {\bf Method used:} K-means
+      \item {\bf Number of clusters:} 100.
+      \item {\bf Distance metric:} Euclidean distance.
+      \item {\bf Running time:} 5 minutes
     \end{itemize}
   \end{frame}
 
@@ -179,6 +181,7 @@
   \section{Questions?}
   \begin{frame}
     \frametitle{Questions?}
+
   \end{frame}
 
 
