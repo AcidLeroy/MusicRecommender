@@ -13,6 +13,7 @@
 \usepackage{algorithmic}
 \usepackage{url}
 \usepackage{float}
+\usepackage{xcolor}
 
 
 
@@ -30,6 +31,8 @@
 
 \begin{document}
 \maketitle
+
+%--------------------- OUTLINE -------------------------%
 \section{Outline}
 \begin{frame}
   \frametitle{Outline}
@@ -38,9 +41,7 @@
       \begin{itemize}
         \item Overview
         \item Data normalization
-        \item Validation
-        \item Results
-        \item References
+        \item Validation block diagram
       \end{itemize}
     \item Content based filtering
       \begin{itemize}
@@ -48,16 +49,15 @@
       \end{itemize}
   \end{itemize}
 \end{frame}
+
+%-------------------- COLLABORATIVE FILTERING ---------------%
 \section{Collaborative filtering}
-
-
 \begin{frame}
   \frametitle{Overview}
   \begin{figure}
     \includegraphics[width=0.5\linewidth]{figures/CollaborativeFilteringOverview.jpg}
   \end{figure}
 \end{frame}
-
 
 \begin{frame}
   \frametitle{Data normalization}
@@ -75,14 +75,12 @@
   \end{itemize}
 \end{frame}
 
-
 \begin{frame}
   \frametitle{Validation block diagram}
   \begin{figure}
     \includegraphics[width=0.5\linewidth]{figures/Validation.jpg}
   \end{figure}
 \end{frame}
-
 
 \begin{frame}
   \frametitle{Validation}
@@ -102,122 +100,89 @@
     \end{itemize}
   \end{frame}
 
-  \begin{frame}
-    \frametitle{Results}
-    \begin{itemize}
-      \item Results based on a scaling from 0-10: 
-        \begin{itemize}
-          \item Mean Absolute Difference: 2.6
-          \item Root Mean Square Error  : 3.7
-        \end{itemize}
-    \end{itemize}
-  \end{frame}
-
+%--------------- CONTENT BASED FILTERING ------------------------%
   \section{Content Based Filtering}
   \begin{frame}
-    \frametitle{Getting Features}
-    \begin{figure}[h]
-      \centering
-      \includegraphics[width=4in]{figures/similarity_matrix.png}
-      \caption{Extracting the features}
-      \label{fig:similarity_matrix}
-    \end{figure}
-  \end{frame}
-
-  \begin{frame}
     \begin{figure}[!h]
+      \frametitle{Block diagram}
       \centering
       \includegraphics[width=0.5\linewidth]{figures/contentBasedBlockDiag.jpg}
-      \caption{Collaborative filtering using content based predictions}
-    \end{figure}
-  \end{frame}
-  \begin{frame}
-    \frametitle{Generating Dense Rating Matrix}
-    \begin{figure}[h]
-      \centering
-      \includegraphics[width=4in]{figures/content_similarity_algorithm.png}
-      \caption{Building a dense matrix to feed to the collaborative filtering algorithm}
-      \label{fig:content_similarity_algorithm}
+      \caption{ Content enhanced collaborative filtering}
     \end{figure}
   \end{frame}
 
   \begin{frame}
-    \frametitle{Combining Collaborative Filtering with Content Based Filtering}
-    \begin{figure}[h]
-      \centering
-      \includegraphics[width=4in]{figures/collab_plus_content.png}
-      \label{fig:collab_plus_content.png}
-    \end{figure}
-  \end{frame}
-
-
-  \section{Challenges with Content Based Filtering}
-  \begin{frame}
-    \frametitle{Challenges Combining Methods}
-    \begin{itemize}
-      \item Two main challenges with this approach
-        \begin{itemize}
-          \item SIZE
-          \item Time...........
-        \end{itemize}
-    \end{itemize}
-  \end{frame}
-
-  \begin{frame}
-    \frametitle{Calculating similarity matrix with brute force}
-    \begin{itemize}
-      \item Size
-        \begin{itemize}
-          \item $1,000,000^2 \times 4\text{bytes} = 4\text{TB}$ to store item-
-          -item similarity matrix
-          \item Even if you account for symmetry: $\text{num\_entries} = \frac{n^2(n-1)}{2}$,
-          we still have a very large matrix.
-        \end{itemize}
-    \end{itemize}
+    \frametitle{Features}
+    For content based filtering we focused our effort on features that could be easily imported ({\it float values, almost all songs have them}). We found two such features,
+    {\bf artist familiarity} and {\bf artist hotness}.
+    \begin{table}
+      \begin{tabular}{|p{4.5cm}|p{2cm} p{2cm} p{2cm}|}
+        \hline
+        {\bf song id} & {\bf familiarity} & {\bf hotness} & {\bf cluster id}\\
+        \hline
+        \hline
+          SOQMMHC12AB0180CB8&           0.39&            0.64&       35\\
+          SOVFVAK12A8C1350D9&           0.35&            0.43&       12\\
+          SOGTUKN12AB017F4F1&           0.43&            0.64&        4\\
+          SOBNYVR12A8C13558C&           0.37&            0.44&       12\\
+          SOHSBXH12A8C13B0DF&           0.00&            0.00&       71\\
+        \hline
+      \end{tabular}
+    \end{table}
   \end{frame}
 
   \begin{frame}
-    \frametitle{Calculating similarity matrix with brute force}
+    \frametitle{Clustering}
     \begin{itemize}
-      \item Time
-        \begin{itemize}
-          \item Even if we had the space generating the matrix takes a lot of patience 
-        \end{itemize}
+      \item {\bf Method used:} K-means
+      \item {\bf Number of clusters:} 100.
+      \item {\bf Distance metric:} Euclidean distance.
+      \item {\bf Running time:} 5 minutes
     \end{itemize}
   \end{frame}
 
+
+%---------------- RESULTS and FUTURE WORK ---------------------%
+  \section{Result and future work}
   \begin{frame}
     \frametitle{Results}
-    \begin{itemize}
-      \item Because of challenges implementing some of the details in spark, we never had a successful run
-      with our dense matrix as input.
-    \end{itemize}
+    \begin{table}
+      \begin{tabular}{|p{5cm}|p{3cm} p{3cm}|}
+        \hline
+        {\bf Method} & {\bf RMSE} & {\bf Mean Absoute difference} \\
+        \hline
+        \hline
+        {\color{red} Collaborative filtering} & {\color{red}$3.72$} & {\color{red}$2.63$}\\
+        {\color{blue}Content enhanced collaborative filtering} & {\color{blue}$3.78$} & {\color{blue}$2.68$}\\
+        \hline
+      \end{tabular}
+    \end{table}
   \end{frame}
 
   \begin{frame}
     \frametitle{Future Work}
+    We observe that content based filtering is under performing. This might be fixed by,
     \begin{itemize}
-      \item In order to get this approach to work, the following needs to be looked into:
-      \begin{itemize}
-        \item Reducing the size of item-item similarity matrix.
-        \begin{itemize}
-          \item Make it a sparse matrix by only keeping similarities above a certain threshold
-        \end{itemize}
-        \item Improve dense user matrix creation algorithm for better parallelization.
-      \end{itemize}
+      \item Increasing number of clusters beyond 100.
+      \item Import extra features which may result in better clustering.
+      \item Use a different metric in calculating distance.
     \end{itemize}
   \end{frame}
 
+%--------------------- CODE BASE ------------------%
   \section{Code Base}
   \begin{frame}
     \begin{itemize}
-      \item All code for challenge is here: https://github.com/AcidLeroy/MusicRecommender/
+      \item All code is here: https://github.com/AcidLeroy/MusicRecommender/
     \end{itemize}
   \end{frame}
 
+%---------------------- QUESTIONS -------------------%
   \section{Questions?}
   \begin{frame}
     \frametitle{Questions?}
+
   \end{frame}
+
 
   \end{document}
