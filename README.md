@@ -1,8 +1,5 @@
 #Music Recommender
-
-In this project we have included several scripts that can be run for both collaborative filtering and content based filtering. 
-We have successfully implemented the collaborative filtering, but didn't have much luck with the content filtering due to the fact
-that the dense matrix was extremely large. This code was tested using [the million song data base](http://labrosa.ee.columbia.edu/millionsong/).
+In this undertaking we have incorporated a few contents that can be run for both cooperative sifting and substance based separating. We have effectively executed the cooperative sifting, however didn't have a lot of karma with the substance separating because of the way that the thick lattice was incredibly huge. This code was tried utilizing [the million song data base](http://labrosa.ee.columbia.edu/millionsong/).
 
 ##Dependencies
 - Spark
